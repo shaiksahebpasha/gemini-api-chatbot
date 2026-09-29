@@ -262,7 +262,7 @@ int main(void) {
         puts(answer);
 
         old_size = history.size;
-        if (old_size > 0 && !buffer_append(&history, ",", 1) ||
+        if ((old_size > 0 && !buffer_append(&history, ",", 1)) ||
             !append_history_message(&history, "model", answer)) {
             history.size = old_size;
             history.data[history.size] = '\0';
