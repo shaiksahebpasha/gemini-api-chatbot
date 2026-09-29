@@ -145,7 +145,13 @@ static int call_gemini(const char *api_key, const char *model,
     char url[512];
     int ok = 0;
 
-    if (!buffer_init(&response, MAX_RESPONSE) || !buffer_init(&request, MAX_REQUEST)) {
+    if (!buffer_init(&response, MAX_RESPONSE)) {
+        fprintf(stderr, "Out of memory.\n");
+        buffer_free(&response);
+        return 0;
+    }
+
+    if (!buffer_init(&request, MAX_REQUEST)) {
         fprintf(stderr, "Out of memory.\n");
         buffer_free(&response);
         buffer_free(&request);
@@ -262,8 +268,11 @@ int main(void) {
         puts(answer);
 
         old_size = history.size;
-        if ((old_size > 0 && !buffer_append(&history, ",", 1)) ||
-            !append_history_message(&history, "model", answer)) {
+        if (old_size > 0 && !buffer_append(&history, ",", 1)) {
+            fprintf(stderr, "Conversation history is full; use /clear.\n");
+            continue;
+        }
+        if (!append_history_message(&history, "model", answer)) {
             history.size = old_size;
             history.data[history.size] = '\0';
             fprintf(stderr, "Response not saved; use /clear.\n");
